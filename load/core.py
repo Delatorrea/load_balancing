@@ -87,7 +87,7 @@ class Cluster:
             count += 1
 
     def get_server_available(self):
-        # Ordena Servidores de forma crescente por quantidade de usuários
+        # Ordena Servidores de forma decrescente por quantidade de usuários
         self.servers.sort(key=lambda x: x.usercount, reverse=True)
 
         # Filtra servidores ativos e que estejam com vaga disponível
