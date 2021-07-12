@@ -10,14 +10,3 @@ if __name__ == '__main__':
     for line in data.users:
         cluster.dimension(line)
 
-
-
-
-
-    #a = Server()
-    #a.sum_usercount()
-    #servers.append(a)
-    #a.sum_usercount()
-    # produto = reduce(lambda x, y: x.usercount + y.usercount, servers)
-    #print(servers[0].usercount)
-    #print(servers[1].usercount)
