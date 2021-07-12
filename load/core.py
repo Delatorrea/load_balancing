@@ -1,3 +1,6 @@
+import os
+
+
 class Input:
 
     def __init__(self):
@@ -49,6 +52,21 @@ class Input:
             __line += 1
 
 
+class Output:
+    def __init__(self):
+        if os.path.exists("output.txt"):
+            os.remove("output.txt")
+
+        self.archive = open('output.txt', 'w')  # Arquivo output.txt iniciado
+        self.text = ''
+
+    def save_archive(self):
+        self.archive.writelines(self.text)
+
+    def add_line(self, line):
+        self.text = line
+
+
 class Cluster:
 
     def __init__(self, ttask, umax):
@@ -57,6 +75,7 @@ class Cluster:
         self.price = 0  # Valor acumulado gerado pelos serviços executados nos servidores
         self.server = None  # Atributo recebe instância de Servidor
         self.servers = []  # Lista de Servidores no Cluster
+        self.output = Output()  # Arquivo que irá receber todos os registros de saída
 
     def add_server(self):
         self.server = Server()
@@ -66,14 +85,22 @@ class Cluster:
     def remove_server(self, server):
         self.servers.remove(server)
 
-    def count_servers(self):
-        return len(self.servers)
+    def get_servers_used(self):
+        used = ''
+        for server in self.servers:
+            used += str(server.count_users()) + ', '
+
+        self.output.add_line('\n' + used[:-2])
+        self.output.save_archive()
 
     def add_price(self):
         self.price += 1
 
     def dimension(self, qtd_user):
         count = 0
+
+        # Libera recurso já consumido
+        self.release_resource()
 
         # Pra cada usuário necessário verifica se há um servidor disponível e o provisiona caso não haja.
         while count < qtd_user:
@@ -85,6 +112,7 @@ class Cluster:
             server_available.add_user(user)
 
             count += 1
+        self.get_servers_used()
 
     def get_server_available(self):
         # Ordena Servidores de forma decrescente por quantidade de usuários
@@ -107,7 +135,7 @@ class Cluster:
             # Retorna servidor reativado
             return server
 
-        # Caso não encontre servidores disponíveis instância um novo.
+        # Caso não encontre servidores disponíveis instancia um novo.
         return self.add_server()
 
     def release_resource(self):
@@ -155,6 +183,9 @@ class Server:
 
     def status(self):
         return self.active
+
+    def time_task(self):
+        pass
 
 
 class User:
