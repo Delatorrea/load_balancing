@@ -1,4 +1,4 @@
-from core.models import Input, Cluster
+from load.core import Input, Cluster
 from functools import reduce
 
 
