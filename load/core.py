@@ -102,6 +102,8 @@ class Cluster:
         # Libera recurso já consumido
         self.release_resource()
 
+        # TODO Remover contagem de ttask de dentro do loop. Quando não há novos usuários o ttask não é incrementado.
+
         # Pra cada usuário necessário verifica se há um servidor disponível e o provisiona caso não haja.
         while count < qtd_user:
             # Retorna um servidor disponível
@@ -122,6 +124,10 @@ class Cluster:
         servers_active = list(filter(lambda x: x.active is True and (x.usercount < self.umax), self.servers))
 
         for server in servers_active:
+            #
+            for user in server.users:
+                user.add_ttask()
+
             # Retorna primeiro servidor disponível encontrado
             return server
 
@@ -139,7 +145,15 @@ class Cluster:
         return self.add_server()
 
     def release_resource(self):
-        pass
+        # Filtra servidores ativos
+        servers_active = list(filter(lambda x: x.active is True, self.servers))
+
+        for server in servers_active:
+            for user in server.users:
+                if user.ttask >= self.ttask:
+                    server.remove_user(user)
+            if server.count_users() == 0:
+                server.set_inactive()
 
 
 class Server:
