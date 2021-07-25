@@ -69,13 +69,29 @@ class Output:
 
 class Cluster:
 
-    def __init__(self, ttask, umax):
-        self.ttask = ttask  # Tempo que servidor leva para executar uma tarefa
-        self.umax = umax  # Limite de usuários que servidor comporta simultaneamente
+    def __init__(self):
+        self.input = Input()  # Arquivo com parâmetros do Cluster e usuários
+        self.ttask = self.input.ttask  # Tempo que servidor leva para executar uma tarefa
+        self.umax = self.input.umax  # Limite de usuários que servidor comporta simultaneamente
         self.price = 0  # Valor acumulado gerado pelos serviços executados nos servidores
         self.server = None  # Atributo recebe instância de Servidor
         self.servers = []  # Lista de Servidores no Cluster
         self.output = Output()  # Arquivo que irá receber todos os registros de saída
+
+    def start(self):
+        index = 0
+        self.add_server()
+
+        # Enquanto houver Servidor ativo os Ticks são consumidos
+        while list(filter(lambda x: x.active is True, self.servers)).__len__() > 0:
+
+            # Se houver usuários na lista passa como parâmetro caso contrário envia 0 (zero usários)
+            if index >= self.input.users.__len__():
+                self.dimension(0)
+            else:
+                self.dimension(self.input.users[index])
+
+            index += 1
 
     def add_server(self):
         self.server = Server()
@@ -102,7 +118,8 @@ class Cluster:
         # Libera recurso já consumido
         self.release_resource()
 
-        # TODO Remover contagem de ttask de dentro do loop. Quando não há novos usuários o ttask não é incrementado.
+        # Adiciona 1 ttask ao usuário
+        self.set_ttask_users()
 
         # Pra cada usuário necessário verifica se há um servidor disponível e o provisiona caso não haja.
         while count < qtd_user:
@@ -114,6 +131,7 @@ class Cluster:
             server_available.add_user(user)
 
             count += 1
+
         self.get_servers_used()
 
     def get_server_available(self):
@@ -123,13 +141,9 @@ class Cluster:
         # Filtra servidores ativos e que estejam com vaga disponível
         servers_active = list(filter(lambda x: x.active is True and (x.usercount < self.umax), self.servers))
 
-        for server in servers_active:
-            #
-            for user in server.users:
-                user.add_ttask()
-
-            # Retorna primeiro servidor disponível encontrado
-            return server
+        # Retorna primeiro servidor disponível encontrado
+        if servers_active.__len__() > 0:
+            return servers_active[0]
 
         # Caso não encontre servidores ativos Filtra servidores inativos, reativando-os para uso.
         servers_disabled = list(filter(lambda x: x.active is False and (x.usercount < self.umax), self.servers))
@@ -154,6 +168,15 @@ class Cluster:
                     server.remove_user(user)
             if server.count_users() == 0:
                 server.set_inactive()
+
+    def set_ttask_users(self):
+        # Filtra servidores ativos e que estejam com vaga disponível
+        servers_active = list(filter(lambda x: x.active is True and x.usercount <= self.umax, self.servers))
+
+        # Adiciona 1 ttask ao usuário
+        for server in servers_active:
+            for user in server.users:
+                user.add_ttask()
 
 
 class Server:
