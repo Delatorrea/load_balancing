@@ -1,6 +1,7 @@
 from input import Input
 from output import Output
 from server import Server
+from user import User
 
 
 class Cluster:
@@ -114,10 +115,3 @@ class Cluster:
             for user in server.users:
                 user.add_ttask()
 
-class User:
-
-    def __init__(self):
-        self.ttask = 0
-
-    def add_ttask(self):
-        self.ttask += 1
