@@ -1,4 +1,4 @@
-from load_balancing.core import Cluster
+from load_balancing.cluster import Cluster
 
 
 if __name__ == '__main__':
