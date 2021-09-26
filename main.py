@@ -1,4 +1,4 @@
-from load.core import Input, Cluster
+from load_balancing.core import Cluster
 
 
 if __name__ == '__main__':
