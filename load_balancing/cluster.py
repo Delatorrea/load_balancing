@@ -1,7 +1,7 @@
-from input import Input
-from output import Output
-from server import Server
-from user import User
+from load_balancing.input import Input
+from load_balancing.output import Output
+from load_balancing.server import Server
+from load_balancing.user import User
 
 
 class Cluster:
@@ -16,19 +16,19 @@ class Cluster:
         self.output = Output()  # Arquivo que irá receber todos os registros de saída
 
     def start(self):
-        index = 0
-        self.add_server()
+        self.dimension(self.input.get_qtd_user())
+        self.input.add_index()
 
         # Enquanto houver Servidor ativo os Ticks são consumidos
         while list(filter(lambda x: x.active is True, self.servers)).__len__() > 0:
 
-            # Se houver usuários na lista passa como parâmetro caso contrário envia 0 (zero usários)
-            if index >= self.input.users.__len__():
+            # Se houver usuários na lista passa como parâmetro caso contrário envia 0 (zero usuários)
+            if self.input.get_index() >= self.input.get_count_list_user():
                 self.dimension(0)
             else:
-                self.dimension(self.input.users[index])
+                self.dimension(self.input.get_qtd_user())
 
-            index += 1
+            self.input.add_index()
 
     def add_server(self):
         self.server = Server()
@@ -85,12 +85,13 @@ class Cluster:
         # Caso não encontre servidores ativos Filtra servidores inativos, reativando-os para uso.
         servers_disabled = list(filter(lambda x: x.active is False and (x.usercount < self.umax), self.servers))
 
-        for server in servers_disabled:
-            # Ativa servidor encontrado
-            server.set_active()
+        if servers_disabled.__len__() > 0:
+            for server in servers_disabled:
+                # Ativa servidor encontrado
+                server.set_active()
 
-            # Retorna servidor reativado
-            return server
+                # Retorna servidor reativado
+                return server
 
         # Caso não encontre servidores disponíveis instancia um novo.
         return self.add_server()
@@ -114,4 +115,3 @@ class Cluster:
         for server in servers_active:
             for user in server.users:
                 user.add_ttask()
-

@@ -1,4 +1,5 @@
 class User:
+    """User object contains user ttasks"""
 
     def __init__(self):
         self.ttask = 0
